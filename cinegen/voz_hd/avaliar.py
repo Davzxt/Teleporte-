@@ -1,7 +1,7 @@
 """Deixa-um-de-fora em 20 frases do próprio banco: sintetiza a sequência de fonemas SEM a gravação
 original e compara com ela (MCD, mesma métrica da voz anterior) + emendas por segundo."""
 import numpy as np
-import voz
+import vozhd as voz
 
 def mcd(a, b):
     A, B = voz.mfcc(a)[:, 1:13], voz.mfcc(b)[:, 1:13]

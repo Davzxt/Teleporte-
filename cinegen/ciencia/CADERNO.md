@@ -269,3 +269,49 @@ Esse é o **teto da recombinação pura**. A peça que falta é um harmonizador 
 | **Voz HD (97 min)** | **16,3 ± 1,3** | **3,4** |
 
 Ressalva: os locutores e os bancos são diferentes, então a comparação é aproximada.
+
+---
+
+# Parte 5: harmonizador (2 tentativas, ambas refutadas) e "O Interrogatório"
+
+## 12. Harmonizador v1: U-Net residual de 1 passo (0,9M parâmetros), 128 px
+
+**Treino:** auto-supervisionado em pares (rosto real → versão remendada com partes de 8 vizinhos),
+perda L1 + L1 de alta frequência, 2.500 passos (~22 min de CPU).
+
+| | Detector ↓ | Espectro ↓ | Novidade |
+|---|---|---|---|
+| Fotomontagem | 62% | 0,32 | 0,84 |
+| v1 harmonizada | 64% | **1,00 (borrada)** | 0,85 |
+
+**Refutada.** Uma rede determinística treinada por erro médio não consegue inventar o detalhe certo
+(ele é imprevisível a partir de partes de outras pessoas). Ela converge para a média, e a média é
+borrão. O risco tinha sido previsto antes do resultado.
+
+## 13. Harmonizador v2: corrige só a escala grossa (32 px), preservando a textura real
+
+- **No treino funciona:** o erro grosso cai de 0,0285 para 0,0213 (−25%).
+- **Nos rostos gerados falha:** o detector passa de 67% para **86%**, o espectro de 0,30 para 0,42 e
+  aparecem manchas escuras. Causa: **mudança de distribuição**. O treino usa plantas reais; a
+  geração usa plantas sorteadas pela GMM, que têm "fantasmas" nunca vistos no treino.
+
+**Lição:** o harmonizador precisa ser **gerador** (sortear detalhe coerente) e ser treinado com as
+próprias saídas do modelo. Isso exige mais computação do que a CPU daqui oferece.
+
+## 14. Cena "O Interrogatório" (`../filme/drama.py`)
+
+**Elenco e som:**
+- dois rostos gerados (Fotomontagem HD, doadores k=8, olhos e nariz/boca coerentes), escolhidos à
+  mão pelo diretor entre 48 candidatos;
+- duas vozes humanas recombinadas (FalaBrasil hts-br e TTS-Portuguese-Corpus), cada fala com 12
+  tomadas escolhidas pelo crítico de sincronia;
+- animação por deformação na geometria FFHQ;
+- campo/contracampo com claro-escuro;
+- chuva, relógio, lâmpada, trovão sincronizado com relâmpago, trilha de tensão.
+
+**Sincronia medida nos pixels:** 6/6 falas dentro de 1 quadro (0–42 ms), correlação de 0,75 a 0,90.
+
+**Fotografia:** a primeira versão foi reprovada pelo próprio autor (queixo cortado, vazio no quadro,
+borda da foto visível, rosto estourado) e foi recomposta.
+
+**Limite visível:** os remendos nos rostos (boca e pele).
