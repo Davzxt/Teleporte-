@@ -201,7 +201,8 @@ class Fotomontagem:
         self.detalhe = torch.tensor(X).half() - self.baixo64
         yy, xx = np.mgrid[:X.shape[1], :X.shape[1]]
         ms = []
-        for cy, cx, ry, rx in REGIOES.values():
+        e = X.shape[1] / 64                        # regiões definidas em 64x64
+        for cy, cx, ry, rx in ((c * e for c in r) for r in REGIOES.values()):
             d = ((yy - cy) / ry) ** 2 + ((xx - cx) / rx) ** 2
             ms.append(1 / (1 + np.exp((d - 1) * self.suave * 2)))
         M = np.stack(ms)

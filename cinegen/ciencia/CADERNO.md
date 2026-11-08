@@ -101,3 +101,61 @@ indistinguível** (real = 50%), e a resolução é baixa. A hipótese central fi
 3. **Mais resolução:** níveis 128 e 256 com regiões menores (cílios, pele, cabelo).
 4. **Alinhamento corrigido** (H4 sem dar a volta nas bordas, por marcos faciais).
 5. **Ligar ao CINEGEN:** rosto gerado → várias vistas → ator 3D (`../ator3d/`) → fala sincronizada.
+
+---
+
+# Parte 2: voz humana real e vídeo de rosto falando
+
+## 7. Voz por recombinação de fala real (`../voz_real/`)
+
+**Dados:** 20 frases reais (70 s, locutor masculino PT-BR) do TTS-Portuguese-Corpus, de Edresson
+Casanova, sob licença CC BY 4.0. Foi o único áudio de fala real acessível pela rede deste ambiente.
+
+**Método:**
+1. **Alinhamento fonético sem anotação:** HMM de 3 sub-estados por fonema, com pausas opcionais
+   entre palavras e auto-treino por Viterbi a partir de início plano. Convergiu em 8 iterações
+   (12 s), gerando 727 unidades.
+2. **Validação física do alinhamento:**
+   - "s" com centroide em 4,1 kHz e "f" em 3,3 kHz;
+   - "u" em 463 Hz e "o" em 602 Hz;
+   - silêncio a −64 dB contra −35 dB nas vogais.
+3. **Seleção de unidades:** Viterbi sobre custo de alvo (contexto fonético) + custo de emenda
+   (salto espectral). Trechos contínuos da mesma gravação custam zero.
+
+**Resultado (deixa-um-de-fora: a frase testada nunca está no banco):**
+
+| Voz | MCD (variante MFCC, dB) ↓ |
+|---|---|
+| Articulatória/formantes antiga | 57,5 ± 7,9 |
+| **Recombinação de voz real** | **20,8 ± 1,9** (melhor em 20/20 frases) |
+
+Os pesos de alvo e emenda quase não mudam o resultado: o método é robusto.
+
+**Limites:**
+- 70 s de banco geram emendas audíveis e prosodia pouco variada.
+- Um só locutor.
+- O "ʃ" tem só 2 exemplos.
+
+## 8. Vídeo: rosto novo falando (`../video_real/falante.py`)
+
+**Etapas:**
+1. **Identidade:** Fotomontagem em 128 px sobre 7.177 homens de 20 a 55 anos (planta GMM com 300
+   grupos). Um crítico (detector treinado na hora) ordena 64 candidatos.
+   - O filtro automático de "boca neutra" **falhou** (rostos superexpostos enganam a medida), e o
+     rosto final foi **escolhido por um humano** entre os 8 melhores do crítico.
+   - Novidade de 1,07: não é cópia.
+2. **Animação por deformação:** o queixo e o lábio inferior descem, o lábio superior sobe e o vão
+   recebe interior com gradiente, dentes superiores suaves e desfoque óptico local. Inclui
+   piscadas, micro-movimento e acenos ligados à energia da voz.
+3. **Tentativa descartada:** escolher bocas reais por "abertura". A medida de abertura não passou
+   no controle visual (barba e dentes a confundiam).
+
+**Sincronia:**
+- Trajetória × áudio: atraso de 0 ms nas 3 frases.
+- Medida **nos pixels do vídeo final**: correlação de 0,62 e atraso de 0 ms.
+- Uma primeira medição deu −125 ms por erro da régua (ela procurava pixels pretos depois que o
+  interior da boca passou a ser marrom). Foi corrigida.
+
+**Limites:**
+- 128 px ampliados (macio); o UTKFace tem no máximo 200 px.
+- Cabeça quase frontal; sem corpo nem cenário.
