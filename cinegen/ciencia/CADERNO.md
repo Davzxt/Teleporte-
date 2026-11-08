@@ -212,3 +212,60 @@ gravação do banco, e escolha pelo crítico:
 - A silhueta do astronauta é simples.
 - A voz tem um só locutor e 70 s de banco.
 - Não há corpo humano realista em plano aberto.
+
+---
+
+# Parte 4: upgrade de dados (busca no GitHub) e Voz HD
+
+## 9. Dados novos encontrados
+
+- **Rostos FFHQ 512×512** (NVIDIA, CC BY-NC-SA 4.0): 703 de `mmshaifur/FFHQ_dataset` e 4.187
+  extraídos de 80 das 997 partes de um zip dividido em `TrevisanoEros/ffhq-dataset`. A extração
+  leu o índice zip64 e baixou só as partes necessárias. Total: **4.890 rostos HD**.
+- **Voz FalaBrasil hts-br** (UFPA, BSD-2): **97,5 min**, 1.000 frases de um locutor brasileiro, com
+  marcação fonética pronta (40 fonemas).
+
+## 10. Rostos HD (256 px; detector = média de 3 sementes, 400 de teste)
+
+| Variante | Detector ↓ | Novidade |
+|---|---|---|
+| Fotomontagem HD (GMM 150) | 66% | 0,86 |
+| A: doadores mais parecidos (k=8) | **60%** | 0,83 |
+| B: olhos/boca do mesmo doador | 66% | 0,86 |
+| C: planta 32 px | 74% (refutada) | 0,89 |
+| A+B | 66% | 0,82 |
+
+**Atenção:** com 400 fotos de teste o detector tem menos poder que no experimento de 64 px
+(3.000), então a comparação com ~88% é otimista.
+
+**Defeitos visíveis que persistem:**
+- olhar incoerente;
+- dentes e boca de outro doador;
+- bigode em rosto feminino.
+
+Esse é o **teto da recombinação pura**. A peça que falta é um harmonizador treinado (ver
+`docs/ARQUITETURA_V2.md`).
+
+## 11. Voz HD (`../voz_hd/`)
+
+**Componentes:**
+- Conversor texto→fonema com regras do português brasileiro: tS/dZ, nasais, semivogais,
+  vocalização de "l", "r" de coda.
+- Seleção de unidades em 50 mil unidades.
+- Emenda com custo de entonação (F0).
+- Emenda no ponto de maior correlação da onda.
+
+**Bugs encontrados pelo próprio teste:**
+1. O corte do silêncio inicial usava o fim do trecho inteiro e cortava o começo das frases. O bug
+   também existia na voz antiga e foi corrigido nas duas.
+2. Havia uma frase gravada duas vezes no banco (vazamento no teste); duplicatas agora são excluídas.
+3. A poda aleatória de candidatos destruía as continuações naturais; agora é priorizada por contexto.
+
+**Resultado (mesma régua para as duas, deixa-um-de-fora):**
+
+| Voz | MCD ↓ | Emendas/s ↓ |
+|---|---|---|
+| Antiga (70 s) | 22,3 ± 2,2 | 5,2 |
+| **Voz HD (97 min)** | **16,3 ± 1,3** | **3,4** |
+
+Ressalva: os locutores e os bancos são diferentes, então a comparação é aproximada.

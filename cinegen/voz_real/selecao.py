@@ -98,7 +98,7 @@ class Voz:
             a = self.A[u0["frase"]]
             ini, fim = u0["ini"], u1["fim"]
             if u0["fon"] == "_":
-                ini = max(ini, fim - int(0.12 * SR))     # pausas curtas
+                ini = max(ini, u0["fim"] - int(0.12 * SR))     # pausas curtas (apara só o silêncio inicial)
             seg = a[max(ini - xf, 0):fim + xf].copy()
             vog = [self.U[i]["energia"] for _, i in tr["fones"] if self.U[i]["fon"] in "aeiou"]
             if vog:

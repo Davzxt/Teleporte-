@@ -185,7 +185,10 @@ class Fotomontagem:
     """Planta 16x16 sorteada (H2) + TODO o detalhe acima de 16x16 vindo de regiões inteiras de
     pessoas reais compatíveis (doadores), fundidas com máscaras suaves (mistura laplaciana de 2 bandas)."""
 
-    def __init__(self, base="viz", doadores=24, base_res=16, suave=2.5, grupos=48, alinhar=0, temp=1.0):
+    def __init__(self, base="viz", doadores=24, base_res=16, suave=2.5, grupos=48, alinhar=0, temp=1.0,
+                 regioes=None, regioes_res=64, juntar=None):
+        self.juntar = juntar or []        # listas de índices de região que vêm do MESMO doador
+        self.regioes, self.regioes_res = regioes or REGIOES, regioes_res
         self.temp = temp
         self.tipo_base, self.k, self.base_res, self.suave = base, doadores, base_res, suave
         self.grupos, self.alinhar = grupos, alinhar      # H2c / H4
@@ -201,8 +204,8 @@ class Fotomontagem:
         self.detalhe = torch.tensor(X).half() - self.baixo64
         yy, xx = np.mgrid[:X.shape[1], :X.shape[1]]
         ms = []
-        e = X.shape[1] / 64                        # regiões definidas em 64x64
-        for cy, cx, ry, rx in ((c * e for c in r) for r in REGIOES.values()):
+        e = X.shape[1] / self.regioes_res          # regiões definidas na resolução de referência
+        for cy, cx, ry, rx in ((c * e for c in r) for r in self.regioes.values()):
             d = ((yy - cy) / ry) ** 2 + ((xx - cx) / rx) ** 2
             ms.append(1 / (1 + np.exp((d - 1) * self.suave * 2)))
         M = np.stack(ms)
@@ -217,6 +220,9 @@ class Fotomontagem:
         doad = torch.cdist(g, self.globais).topk(self.k, largest=False).indices        # (n, k)
         R = self.M.shape[0]
         esc = torch.stack([torch.tensor(rng.permutation(self.k)[:R]) for _ in range(n)])  # doador distinto por região
+        for grupo in self.juntar:
+            for j in grupo[1:]:
+                esc[:, j] = esc[:, grupo[0]]
         ids = doad[torch.arange(n)[:, None], esc]                                         # (n, R)
         B = torch.tensor(ampliar(b, self.detalhe.shape[1]))
         D = self.detalhe[ids].float()                                                     # (n, R, H, W, 3)
@@ -236,3 +242,10 @@ class Fotomontagem:
                         D[m] = D[m].roll((dy, dx), (1, 2))
         det = (D * self.M[None]).sum(1)
         return (B + det).numpy()
+
+
+# ------------------------------------------------------------------ HD (FFHQ, 256 px): rosto + cabelo + fundo
+REGIOES_FFHQ = {  # (cy, cx, ry, rx) em 256x256
+    "olho_e": (120, 95, 15, 24), "olho_d": (120, 161, 15, 24),
+    "nariz": (150, 128, 20, 15), "boca": (187, 128, 15, 30),
+}
