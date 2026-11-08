@@ -7,6 +7,17 @@ voz), o sistema **recombina dados humanos reais** em vez de alucinar.
 
 ![quadros do curta](saida/quadros.png)
 
+## Destaques
+
+- 🎬 **[`saida/o_monolito.mp4`](saida/o_monolito.mp4): cena completa de 45 s em outro planeta.** Mundo
+  procedural, rosto gerado falando no capacete, voz humana recombinada e desenho de som completo.
+- 🗣️ [`saida/falante_real.mp4`](saida/falante_real.mp4): rosto de uma pessoa que não existe falando,
+  com sincronia de 0 ms.
+- 🧪 [`ciencia/CADERNO.md`](ciencia/CADERNO.md): caderno de laboratório com todas as hipóteses,
+  métricas, falhas e correções.
+
+![quadros da cena](saida/o_monolito_quadros.png)
+
 ## O que tem aqui
 
 | Arquivo | Conteúdo |

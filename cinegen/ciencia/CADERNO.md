@@ -159,3 +159,56 @@ Os pesos de alvo e emenda quase não mudam o resultado: o método é robusto.
 **Limites:**
 - 128 px ampliados (macio); o UTKFace tem no máximo 200 px.
 - Cabeça quase frontal; sem corpo nem cenário.
+
+---
+
+# Parte 3: cena completa em outro planeta ("O Monólito", `../filme/`)
+
+**Objetivo:** uma cena de filme inteira (planos, falas, som, montagem) em outro planeta, gerada sem
+difusão e sem GAN.
+
+**Fontes de cada elemento:**
+- **Mundo:** procedural e determinístico, sem dados (não existem fotos de outros planetas para
+  treinar):
+  - planeta em órbita com atmosfera e nascer do sol com reflexo anamórfico;
+  - céu com dois sóis;
+  - gigante gasoso com anéis em ordem de profundidade correta;
+  - cinco camadas de montanhas com névoa atmosférica e luz de contorno dependente da inclinação;
+  - poeira e monólito pulsante.
+- **Humano:**
+  - rosto gerado (Fotomontagem), falando com animação por deformação, dentro de um capacete com
+    visor dourado, reflexo curvo físico, HUD e embaçado da respiração;
+  - silhueta de astronauta com ciclo de caminhada.
+- **Som:**
+  - voz humana recombinada (rádio com banda telefônica e bips, ou seca dentro do capacete);
+  - respiração, vento e passos granulares gerados nos eventos de passo;
+  - zumbido sincronizado com o pulso visual do monólito;
+  - trilha de cordas graves com crescendo.
+
+**Defeitos encontrados e corrigidos nos testes visuais:**
+- emenda de textura no planeta;
+- terreno em listras retas;
+- máscara de luz de contorno invertida (astronauta branco);
+- brilho cobrindo o monólito;
+- rosto grande demais no visor;
+- reflexo cobrindo o rosto;
+- HUD em cima da boca.
+
+**Direção por crítico (H10), medida:** na primeira versão, "Eu vou até lá" ficou com atraso de −167 ms
+(unidades de voz com marcação imprecisa). Com até 21 tomadas por fala, cada uma proibindo uma
+gravação do banco, e escolha pelo crítico:
+
+| Fala no capacete | v1 | v2 (tomadas + crítico), medido nos pixels |
+|---|---|---|
+| "O céu tem dois sóis…" | 0 ms | 0 ms (correlação 0,74) |
+| "Espere. Você ouviu isso?" | 0 ms | 0 ms (correlação 0,80) |
+| "Eu vou até lá." | **−125 ms** | **−42 ms** (1 quadro; correlação 0,72) |
+
+**Custo:** 45 s de cena e 1.082 quadros em 960×540, renderizados em ~10 min numa CPU de 4 núcleos.
+
+**Limites honestos:**
+- O mundo tem estilo de pintura digital fotográfica, não fotorrealismo de filmagem.
+- O rosto tem 128 px (o visor disfarça).
+- A silhueta do astronauta é simples.
+- A voz tem um só locutor e 70 s de banco.
+- Não há corpo humano realista em plano aberto.
